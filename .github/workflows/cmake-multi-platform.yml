@@ -65,3 +65,18 @@ jobs:
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config ${{ matrix.build_type }}
+            
+      - name: Prepare artifact folder
+        shell: bash
+        run: |
+          mkdir -p package
+          cp -r build/* package/ || true
+          if [ -d "DiskManager" ]; then
+            cp -r DiskManager package/
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ matrix.os }}-build-${{ matrix.build_type }}"
+          path: package
