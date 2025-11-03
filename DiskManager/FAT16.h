@@ -55,13 +55,14 @@ struct DirectoryEntryFAT16 {
 
 class FAT16 {
 public:
-    FAT16(OSManager& manager);
+    explicit FAT16(const string& diskImagePath);
 
     bool mount();
     vector<string> listRootDirectory();
 
     bool readFile(const string& filename, vector<uint8_t>& outData);
     bool writeFile(const string& filename, const vector<uint8_t>& inData);
+    bool getIsMounted();
 
 private:
     string formatFilename(const DirectoryEntryFAT16& entry);
@@ -70,7 +71,7 @@ private:
     uint32_t clusterToSector(uint16_t clusterIndex);
     bool findFileInRoot(const string& filename, DirectoryEntryFAT16& outEntry);
 
-    OSManager& m_osManager;
+    OSManager m_osManager;
     bool m_isMounted;
 
     BootSectorFAT16 m_bootSector;

@@ -1,22 +1,18 @@
 #include <iostream>
-
-#include "DiskManager/OSManager.h"
-
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "DiskManager/FAT16.h"
+// UNICO INCLUDE NECESSÁRIO
+#include <cstdint>
+
+#include "DiskManager/File.h"
 
 using namespace std;
 
+// A função printFileContent continua igual
 void printFileContent(const vector<uint8_t>& data) {
-// TODO: Mudar para a classe FILE
     cout << "--- Conteudo do Arquivo  ---" << endl;
-
     string content(data.begin(), data.end());
-
-
     cout << content << endl;
     cout << "------------------------------------------------" << endl;
     cout << "Tamanho total lido: " << data.size() << " bytes." << endl;
@@ -24,27 +20,13 @@ void printFileContent(const vector<uint8_t>& data) {
 
 
 int main() {
-    string diskImagePath = "disco2.img";
-
+    string diskImagePath = "disco2.img"; // Use "disco1.img" ou "disco2.img"
     cout << "Abrindo imagem de disco: " << diskImagePath << endl;
-    OSManager osManager(diskImagePath);
 
-    if (!osManager.isDiskOpen()) {
-        cerr << "Falha ao abrir a imagem de disco. Encerrando." << endl;
-        return 1;
-    }
-
-    FAT16 fatSystem(osManager);
-
-    cout << "\nTentando montar o sistema de arquivos FAT16..." << endl;
-
-    if (!fatSystem.mount()) {
-        cerr << "Falha ao montar o sistema FAT16. Encerrando." << endl;
-        return 1;
-    }
+    File diskFile(diskImagePath);
 
     cout << "\n--- Listando Arquivos no Diretorio Raiz ---" << endl;
-    vector<string> files = fatSystem.listRootDirectory();
+    vector<string> files = diskFile.listRootDirectory();
 
     if (files.empty()) {
         cout << "Nenhum arquivo encontrado no diretorio raiz." << endl;
@@ -55,19 +37,17 @@ int main() {
     }
     cout << "-------------------------------------------" << endl;
 
-
-    string fileToRead = "TEXTO2.TXT";
-
-    vector<uint8_t> fileData;
-
+    string fileToRead = "TESTE.TXT";
     cout << "\nTentando ler o arquivo: " << fileToRead << "..." << endl;
-    if (fatSystem.readFile(fileToRead, fileData)) {
+
+    vector<uint8_t> fileData = diskFile.readFile(fileToRead);
+
+    if (fileData.empty()) {
+        cerr << "Falha ao ler o arquivo ou arquivo esta vazio: " << fileToRead << endl;
+    } else {
         cout << "Arquivo lido com sucesso!" << endl;
         printFileContent(fileData);
-    } else {
-        cerr << "Falha ao ler o arquivo: " << fileToRead << endl;
     }
-
 
     cout << "\nTeste concluido." << endl;
     return 0;

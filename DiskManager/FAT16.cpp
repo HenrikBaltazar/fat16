@@ -8,10 +8,14 @@
 #include <sstream>
 #include <algorithm>
 
-FAT16::FAT16(OSManager& manager) :
-    m_osManager(manager),
+FAT16::FAT16(const string& diskImagePath) :
+    m_osManager(diskImagePath),
     m_isMounted(false) {
     memset(&m_bootSector, 0, sizeof(BootSectorFAT16));
+}
+
+bool FAT16::getIsMounted() {
+    return m_isMounted;
 }
 
 bool FAT16::mount() {

@@ -7,4 +7,6 @@ add_executable(fat16 main.cpp
         DiskManager/OSManager.cpp
         DiskManager/OSManager.h
         DiskManager/FAT16.cpp
-        DiskManager/FAT16.h)
+        DiskManager/FAT16.h
+        DiskManager/File.cpp
+        DiskManager/File.h)
