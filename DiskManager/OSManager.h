@@ -4,29 +4,23 @@
 
 #ifndef FAT16_OSMANAGER_H
 #define FAT16_OSMANAGER_H
+#include <cstdint>
+#include <fstream>
 #include <string>
-#include <vector>
 
 using namespace std;
 
-
-struct File{
-    string path, name;
-    vector<char> data;
-};
-
 class OSManager {
 public:
+    ~OSManager();
     explicit OSManager(const string& path);
-
-    void writeFile(const vector<char>& data);
-    void setPath(const string& path);
-    vector<char> getData();
-
-    private:
-    void readFile();
-
-    File file;
+    bool readSectors(uint32_t sectorIndex, uint32_t count, uint8_t* buffer);
+    bool writeSectors(uint32_t sectorIndex, uint32_t count, const uint8_t* buffer);
+    bool isDiskOpen() const;
+private:
+    string m_path;
+    fstream m_file;
+    const uint32_t m_bytesPerSector = 512;
 };
 
 #endif //FAT16_OSMANAGER_H

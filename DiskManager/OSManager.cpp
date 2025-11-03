@@ -3,46 +3,65 @@
 //
 
 #include "OSManager.h"
-
-#include <filesystem>
-#include <fstream>
 #include <iostream>
 
-using namespace std;
+OSManager::OSManager(const string& path) : m_path(path) {
 
-OSManager::OSManager(const string& path)
-{
-    file.path = path;
-    readFile();
-}
+    m_file.open(m_path, ios::in | ios::out | ios::binary);
 
-void OSManager::readFile() {
-    ifstream in(file.path, ios_base::binary);
-    if (!in) {
-        cerr << "Erro ao abrir arquivo para leitura: " << file.path << endl;
-        return;
+    if (!m_file.is_open()) {
+        cerr << "Nao foi possivel abrir o arquivo: " << m_path << endl;
     }
-    file.data.assign(istreambuf_iterator<char>(in), {});
-    file.name = std::filesystem::path(file.path).filename().string();
 }
 
-void OSManager::setPath(const string &path) {
-    file.path = path;
-    readFile();
+OSManager::~OSManager() {
+    if (m_file.is_open()) {
+        m_file.close();
+    }
 }
 
-void OSManager::writeFile(const vector<char>& data) {
-    ofstream out(file.path, ios::binary);
-    if (!out) {
-        cerr << "Erro ao abrir arquivo para escrita: " << file.path << endl;
-        return;
+
+bool OSManager::isDiskOpen() const {
+    return m_file.is_open();
+}
+
+bool OSManager::readSectors(uint32_t sectorIndex, uint32_t count, uint8_t* buffer) {
+    if (!isDiskOpen()) {
+        cerr << "Erro:leitura de disco fechado." << endl;
+        return false;
     }
 
-    for (auto b : data)
-        out.put(static_cast<char>(b));
+    uint64_t offset = (uint64_t)sectorIndex * m_bytesPerSector;
+
+    m_file.seekg(offset);
+
+    m_file.read(reinterpret_cast<char*>(buffer), (uint64_t)count * m_bytesPerSector);
+
+    if (m_file.fail()) {
+        cerr << "Erro ao ler " << count << " setores do indice " << sectorIndex << endl;
+        return false;
+    }
+
+    return true;
 }
 
-vector<char> OSManager::getData() {
-    return file.data;
-}
 
+bool OSManager::writeSectors(uint32_t sectorIndex, uint32_t count, const uint8_t* buffer) {
+    if (!isDiskOpen()) {
+        cerr << "Erro: escrita de disco fechado." << endl;
+        return false;
+    }
+
+    uint64_t offset = (uint64_t)sectorIndex * m_bytesPerSector;
+
+    m_file.seekp(offset);
+
+    m_file.write(reinterpret_cast<const char*>(buffer), (uint64_t)count * m_bytesPerSector);
+
+    if (m_file.fail()) {
+        cerr << "Erro ao escrever " << count << " setores no indice " << sectorIndex << endl;
+        return false;
+    }
+
+    return true;
+}

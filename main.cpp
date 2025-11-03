@@ -2,64 +2,73 @@
 
 #include "DiskManager/OSManager.h"
 
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "DiskManager/FAT16.h"
+
 using namespace std;
 
+void printFileContent(const vector<uint8_t>& data) {
+// TODO: Mudar para a classe FILE
+    cout << "--- Conteudo do Arquivo  ---" << endl;
+
+    string content(data.begin(), data.end());
+
+
+    cout << content << endl;
+    cout << "------------------------------------------------" << endl;
+    cout << "Tamanho total lido: " << data.size() << " bytes." << endl;
+}
+
+
 int main() {
-    cout << "=== FAT16 OSManager Test ===" << endl;
+    string diskImagePath = "disco2.img";
 
-    string path;
-    cout << "Informe o caminho do arquivo: ";
-    getline(cin, path);
+    cout << "Abrindo imagem de disco: " << diskImagePath << endl;
+    OSManager osManager(diskImagePath);
 
-    OSManager manager(path);
-
-    while (true) {
-        cout << "\n--- MENU ---" << endl;
-        cout << "1. Definir novo caminho" << endl;
-        cout << "2. Escrever no arquivo" << endl;
-        cout << "3. Ler arquivo" << endl;
-        cout << "4. Sair" << endl;
-        cout << "Escolha: ";
-
-        int opcao;
-        cin >> opcao;
-        cin.ignore(); // limpa \n pendente
-
-        if (opcao == 1) {
-            cout << "Novo caminho: ";
-            getline(cin, path);
-            manager.setPath(path);
-        }
-        else if (opcao == 2) {
-            cout << "Digite o texto para salvar no arquivo:" << endl;
-            string texto;
-            getline(cin, texto);
-
-            vector<char> data(texto.size());
-            for (size_t i = 0; i < texto.size(); ++i)
-                data[i] = static_cast<vector<char>::value_type>(static_cast<std::byte>(texto[i]));
-
-            manager.writeFile(data);
-            cout << "✅ Arquivo salvo com sucesso!" << endl;
-        }
-        else if (opcao == 3) {
-            cout << "📂 Conteúdo do arquivo: " << endl;
-
-            // Força releitura do arquivo
-            manager.setPath(path);
-
-            for (auto b : manager.getData())
-                cout << static_cast<char>(b);
-            cout << endl;
-        }
-        else if (opcao == 4) {
-            cout << "Saindo..." << endl;
-            break;
-        }
-        else {
-            cout << "Opção inválida!" << endl;
-        }
+    if (!osManager.isDiskOpen()) {
+        cerr << "Falha ao abrir a imagem de disco. Encerrando." << endl;
+        return 1;
     }
 
+    FAT16 fatSystem(osManager);
+
+    cout << "\nTentando montar o sistema de arquivos FAT16..." << endl;
+
+    if (!fatSystem.mount()) {
+        cerr << "Falha ao montar o sistema FAT16. Encerrando." << endl;
+        return 1;
+    }
+
+    cout << "\n--- Listando Arquivos no Diretorio Raiz ---" << endl;
+    vector<string> files = fatSystem.listRootDirectory();
+
+    if (files.empty()) {
+        cout << "Nenhum arquivo encontrado no diretorio raiz." << endl;
+    } else {
+        for (const string& filename : files) {
+            cout << "- " << filename << endl;
+        }
+    }
+    cout << "-------------------------------------------" << endl;
+
+
+    string fileToRead = "TEXTO2.TXT";
+
+    vector<uint8_t> fileData;
+
+    cout << "\nTentando ler o arquivo: " << fileToRead << "..." << endl;
+    if (fatSystem.readFile(fileToRead, fileData)) {
+        cout << "Arquivo lido com sucesso!" << endl;
+        printFileContent(fileData);
+    } else {
+        cerr << "Falha ao ler o arquivo: " << fileToRead << endl;
+    }
+
+
+    cout << "\nTeste concluido." << endl;
     return 0;
 }
