@@ -78,5 +78,5 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ matrix.os }}-build-${{ matrix.build_type }}"
+          name: "${{ matrix.os }}(${{ matrix.c_compiler }})-build-${{ matrix.build_type }}"
           path: package
