@@ -1,5 +1,9 @@
 # FAT16
 ## Implementação de Funções de Manipulação de Sistema de Arquivos FAT16
+
+### Execucao
+Executar o binario fat16 disponivel na raiz deste repositorio. Discos .img disponiveis no diretorio `disk_images`
+
 ### Objetivo
 Neste trabalho vocês deverão desenvolver um programa em uma linguagem de programação de sua
 escolha para manipular um sistema de arquivos FAT16. O objetivo principal é implementar operações
