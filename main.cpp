@@ -49,6 +49,7 @@ void printFileContent(const vector<uint8_t>& data) {
     cout << content << endl;
     cout << "------------------------------------------------" << endl;
     cout << "Tamanho total lido: " << data.size() << " bytes." << endl;
+    cout << std::flush;
 }
 
 void listRootDirectory(optional<File>& diskFile) {
@@ -161,6 +162,9 @@ void addFile(optional<File>& diskFile) {
 }
 
 int main() {
+    std::setlocale(LC_ALL, "en_US.UTF-8"); // ou "pt_BR.UTF-8"
+    std::ios_base::sync_with_stdio(false);
+    std::cout.tie(nullptr);
     string filename;
     bool isValidFile = false, run = true;
     optional<File> diskFile;

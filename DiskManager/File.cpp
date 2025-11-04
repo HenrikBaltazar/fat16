@@ -3,6 +3,10 @@
 //
 
 #include "File.h"
+#include <vector>
+#include <string>
+#include <codecvt>
+#include <locale>
 #include <iostream>
 #include <stdexcept>
 #include <iomanip>
@@ -74,12 +78,24 @@ long File::getFileSize(const string& filename) {
     return m_fatSystem.getFileSize(filename);
 }
 
-vector<uint8_t> File::readFile(const string& filename) {
+vector<uint8_t> File::readFile(const std::string& filename) {
     vector<uint8_t> data;
+
     if (!m_fatSystem.readFile(filename, data)) {
         data.clear();
+        return data;
     }
-    return data;
+
+    string rawText(data.begin(), data.end());
+    wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
+    wstring wideText;
+
+    for (unsigned char c : rawText)
+        wideText.push_back(static_cast<wchar_t>(c));
+
+    string utf8Text = utf8conv.to_bytes(wideText);
+
+    return std::vector<uint8_t>(utf8Text.begin(), utf8Text.end());
 }
 
 void File::deleteFile(const string& filename) {
@@ -89,7 +105,7 @@ void File::deleteFile(const string& filename) {
 
     // Repassa a chamada para a lógica do FAT16
     m_fatSystem.deleteFile(filename);
-    loadFiles();
+
 }
 
 std::string File::formatFatDate(uint16_t date) {
