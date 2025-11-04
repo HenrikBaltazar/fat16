@@ -10,6 +10,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <iomanip>
+#include <sstream>
 
 File::File(const string& diskImagePath) : m_fatSystem(diskImagePath) {
     m_fatSystem.mount();
