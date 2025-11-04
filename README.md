@@ -12,7 +12,7 @@ criação e manipulação de subdiretórios.
 ### Requisitos
 Implementação de Operações Fundamentais: O programa deve ser capaz de realizar as seguintes
 operações básicas sobre o sistema de arquivos FAT16:
-- [ ] **Listar o conteúdo do disco (10%):** exibir em uma lista os nomes dos arquivos (e seus respectivos tamanhos)
+- [x] **Listar o conteúdo do disco (10%):** exibir em uma lista os nomes dos arquivos (e seus respectivos tamanhos)
   existentes no diretório raiz.
 - [ ] **Listar o conteúdo de um arquivo (10%):** mostrar (pode ser na tela) o conteúdo de um arquivo do diretório
   raiz.

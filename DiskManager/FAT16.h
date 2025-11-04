@@ -53,23 +53,37 @@ struct DirectoryEntryFAT16 {
 };
 #pragma pack(pop)
 
+struct FileInfo {
+    string name;
+    long size;
+};
+
 class FAT16 {
 public:
     explicit FAT16(const string& diskImagePath);
 
     bool mount();
-    vector<string> listRootDirectory();
+    vector<FileInfo> listRootDirectory();
 
     bool readFile(const string& filename, vector<uint8_t>& outData);
-    bool writeFile(const string& filename, const vector<uint8_t>& inData);
+    void writeFile(const string& newName, const vector<uint8_t>& data);
     bool getIsMounted();
-
+    long findRootEntry(const string& filename, DirectoryEntryFAT16& outEntry);
+    long getFileSize(const string& filename);
+    void renameFile(const string& oldName, const string& newName);
+    void deleteFile(const string& filename);
 private:
+    void clearFatChain(uint16_t firstCluster);
     string formatFilename(const DirectoryEntryFAT16& entry);
     vector<uint16_t> getClusterChain(uint16_t firstCluster);
     bool readCluster(uint16_t clusterIndex, uint8_t* buffer);
     uint32_t clusterToSector(uint16_t clusterIndex);
     bool findFileInRoot(const string& filename, DirectoryEntryFAT16& outEntry);
+    bool convertToFAT83(const string& filename, char fatName[8], char fatExt[3]);
+    long findFreeRootEntry();
+    vector<uint16_t> findFreeClusters(uint32_t count);
+    void writeFatToDisk();
+    void writeCluster(uint16_t clusterIndex, const uint8_t* data, uint32_t size);
 
     OSManager m_osManager;
     bool m_isMounted;

@@ -16,10 +16,16 @@ public:
     explicit File(const string& diskImagePath);
 
     bool getIsMounted();
-    vector<string> listRootDirectory();
+    vector<FileInfo> listRootDirectory();
     vector<uint8_t> readFile(const string& filename);
-
+    long getFileSize(const string& filename);
+    vector<FileInfo> getFilesInfo();
+    void renameFile(const string& oldName, const string& newName);
+    void loadFiles();
+    void writeFile(const string& hostPath, const string& fatName);
+    void deleteFile(const string& filename);
 private:
+    vector<FileInfo> files;
     FAT16 m_fatSystem;
 };
 
