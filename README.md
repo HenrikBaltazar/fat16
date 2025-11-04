@@ -16,12 +16,12 @@ operações básicas sobre o sistema de arquivos FAT16:
   existentes no diretório raiz.
 - [ ] **Listar o conteúdo de um arquivo (10%):** mostrar (pode ser na tela) o conteúdo de um arquivo do diretório
   raiz.
-- [ ] **Exibir os atributos de um arquivo (10%):** mostrar data/hora da criação/última modificação e os seguintes
+- [x] **Exibir os atributos de um arquivo (10%):** mostrar data/hora da criação/última modificação e os seguintes
   atributos: se é somente leitura; se é oculto; se é arquivo de sistema
-- [ ] **Renomear um arquivo (10%):** trocar o nome de um arquivo existente
-- [ ] **Inserir/criar um novo arquivo (40%):** permitir que se armazene no diretório raiz um novo arquivo
+- [x] **Renomear um arquivo (10%):** trocar o nome de um arquivo existente
+- [x] **Inserir/criar um novo arquivo (40%):** permitir que se armazene no diretório raiz um novo arquivo
   externo.
-- [ ] **Apagar/remover um arquivo (20%):** apagar um arquivo do diretório raiz.
+- [x] **Apagar/remover um arquivo (20%):** apagar um arquivo do diretório raiz.
 
 ---
 
