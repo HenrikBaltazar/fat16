@@ -5,7 +5,8 @@
 #include "FAT16.h"
 #include <iostream>
 #include <cstring>
-#include <sstream>
+#include <chrono>
+#include <ctime>
 #include <algorithm>
 
 FAT16::FAT16(const string& diskImagePath) :
@@ -179,7 +180,11 @@ vector<FileInfo> FAT16::listRootDirectory() {
 
         FileInfo info;
         info.name = formatFilename(entry);
-        info.size = (long)entry.fileSize; // Já temos o tamanho aqui!
+        info.size = entry.fileSize; // Já temos o tamanho aqui!
+        info.createDate = entry.modificationDate;
+        info.createTime = entry.modificationTime;
+        info.modifyDate = entry.modificationDate;
+        info.modifyTime = entry.modificationTime;
 
         fileList.push_back(info);
     }
@@ -291,7 +296,7 @@ vector<uint16_t> FAT16::getClusterChain(uint16_t firstCluster) {
     // 0xFFF8 a 0xFFFF: são marcadores de "fim de arquivo" (EOC)
     // 0x0000: "cluster livre"
     // 0xFFF7: "cluster ruim"
-    while (currentCluster >= 0x0002 && currentCluster < 0xFFF8) {
+    while (currentCluster >= 0x0002 && currentCluster <= 0xFFF6) {
         chain.push_back(currentCluster);
 
         // Pega o próximo cluster do nosso cache
@@ -568,15 +573,31 @@ void FAT16::writeFile(const string& newName, const vector<uint8_t>& data) {
 
     // Zera a entrada (caso fosse uma 0xE5 com lixo)
     memset(newEntry, 0, sizeof(DirectoryEntryFAT16));
+    // Pega a data e hora atuais do sistema
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_t = std::chrono::system_clock::to_time_t(now);
+    // std::localtime é o suficiente para este app (não precisamos nos preocupar com thread-safety)
+    std::tm* tm_local = std::localtime(&now_t);
 
+    // Converte para o formato de 16 bits do DOS
+
+    // Data: (Ano - 1980) << 9 | (Mês) << 5 | (Dia)
+    uint16_t dosDate = (uint16_t)(((tm_local->tm_year + 1900 - 1980) & 0x7F) << 9); // Ano (offset de 1980)
+    dosDate |= (uint16_t)(((tm_local->tm_mon + 1) & 0x0F) << 5); // Mês (1-12)
+    dosDate |= (uint16_t)(tm_local->tm_mday & 0x1F);           // Dia (1-31)
+
+    // Hora: (Hora) << 11 | (Minuto) << 5 | (Segundo / 2)
+    uint16_t dosTime = (uint16_t)((tm_local->tm_hour & 0x1F) << 11); // Hora (0-23)
+    dosTime |= (uint16_t)((tm_local->tm_min & 0x3F) << 5);  // Minuto (0-59)
+    dosTime |= (uint16_t)((tm_local->tm_sec / 2) & 0x1F);   // Segundos / 2
     // Preenche a entrada
     memcpy(newEntry->fileName, fatName, 8);
     memcpy(newEntry->extension, fatExt, 3);
     newEntry->attributes = 0x20; // 0x20 = Atributo de "Arquivo" (Archive bit)
     newEntry->fileSize = data.size();
     newEntry->firstCluster = firstCluster;
-    // (Datas e horas de modificação ficariam aqui, mas pulamos para simplificar)
-
+    newEntry->modificationTime = dosTime;
+    newEntry->modificationDate = dosDate;
     if (!m_osManager.writeSectors(sectorIndex, 1, sectorBuffer.data())) {
         throw std::runtime_error("Falha ao escrever a entrada de diretorio no disco.");
     }

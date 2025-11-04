@@ -55,7 +55,12 @@ struct DirectoryEntryFAT16 {
 
 struct FileInfo {
     string name;
-    long size;
+    uint32_t size;
+    uint16_t createTime = 0;
+    uint16_t createDate = 0;
+    uint16_t modifyTime = 0;
+    uint16_t modifyDate = 0;
+    uint8_t attributes = 0;
 };
 
 class FAT16 {

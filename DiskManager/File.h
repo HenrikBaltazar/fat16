@@ -24,6 +24,9 @@ public:
     void loadFiles();
     void writeFile(const string& hostPath, const string& fatName);
     void deleteFile(const string& filename);
+    static std::string formatFatDate(uint16_t date);
+    static std::string formatFatTime(uint16_t time);
+
 private:
     vector<FileInfo> files;
     FAT16 m_fatSystem;

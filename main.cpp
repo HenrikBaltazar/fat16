@@ -1,16 +1,47 @@
+//
+// Created by hb on 11/3/25.
+//
 #include <iostream>
 #include <string>
 #include <vector>
 
-// UNICO INCLUDE NECESSÁRIO
 #include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <filesystem>
+#include <locale>
 
 #include "DiskManager/File.h"
 
 using namespace std;
+
+string selectFile(vector<FileInfo> files) {
+    int option;
+    while (true) {
+        cout << "Escolha um arquivo: " << endl;
+        int count = 1;
+        for (auto file : files) {
+            cout << count << " -> "<<file.name << endl;
+            count++;
+        }
+        cout << "Arquivo: ";
+        cin >> option;
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Entrada invalida! Digite apenas numeros.\n\n";
+            continue;
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (option>=1 && option-1 <= files.size()) {
+            break;
+        }else {
+            cerr << "OPCAO INVALIDA, TENTE NOVAMENTE" << endl;
+        }
+    }
+    return files[option-1].name;
+}
 
 void printFileContent(const vector<uint8_t>& data) {
     cout << "--- Conteudo do Arquivo  ---" << endl;
@@ -40,11 +71,7 @@ string toUpper(string str) {
 }
 
 void showFileContent(optional<File>& diskFile) {
-    cout << "Nome do arquivo: ";
-    string filename;
-    cin >> filename;
-
-    filename = toUpper(filename);
+    string filename = toUpper(selectFile(diskFile->getFilesInfo()));
 
     try {
         vector<uint8_t> data = diskFile->readFile(filename);
@@ -54,40 +81,43 @@ void showFileContent(optional<File>& diskFile) {
     }
 }
 
-void showFileAttributes(optional<File>& diskFile) {
+void showFileAttributes(std::optional<File>& diskFile) {
     if (!diskFile.has_value()) {
         cerr << "Erro: Nenhum disco montado." << endl;
         return;
     }
 
-    cout << "Nome do arquivo (8.3): ";
-    string filename;
-    cin >> filename;
+    string filename = toUpper(selectFile(diskFile->getFilesInfo()));
 
-    filename = toUpper(filename);
-
-    // Obtém a lista de arquivos do diretório raiz
     vector<FileInfo> files = diskFile->getFilesInfo();
 
-    // Procura o arquivo pelo nome
     auto it = find_if(files.begin(), files.end(), [&](const FileInfo& f) {
         return f.name == filename;
     });
 
     if (it != files.end()) {
-        cout << "--- Informações do Arquivo ---" << endl;
+        cout << "\n--- Informações do Arquivo ---" << endl;
         cout << "Nome: " << it->name << endl;
         cout << "Tamanho: " << it->size << " bytes" << endl;
+        cout << "Atributos:" << endl;
+        cout << "  Somente leitura: " << ((it->attributes & 0x01) ? "Sim" : "Não") << endl;
+        cout << "  Oculto:          " << ((it->attributes & 0x02) ? "Sim" : "Não") << endl;
+        cout << "  Sistema:         " << ((it->attributes & 0x04) ? "Sim" : "Não") << endl;
+        cout << "  Arquivo:         " << ((it->attributes & 0x20) ? "Sim" : "Não") << endl;
+
+        cout << "\nDatas e Horas:" << endl;
+        cout << "  Criação:          " << File::formatFatDate(it->createDate)
+             << " " << File::formatFatTime(it->createTime) << endl;
+        cout << "  Última modificação: " << File::formatFatDate(it->modifyDate)
+             << " " << File::formatFatTime(it->modifyTime) << endl;
         cout << "--------------------------------" << endl;
     } else {
         cerr << "Erro: Arquivo '" << filename << "' não encontrado no diretório raiz." << endl;
     }
 }
-
 void renameFile(optional<File>& diskFile) {
     string oldName, newName;
-    cout << "Nome do arquivo atual: ";
-    cin >> oldName;
+    oldName = toUpper(selectFile(diskFile->getFilesInfo()));
     cout << "Novo nome do arquivo: ";
     cin >> newName;
 
@@ -103,12 +133,7 @@ void renameFile(optional<File>& diskFile) {
 }
 
 void deleteFile(optional<File>& diskFile) {
-    string filename;
-    cout << "Nome do arquivo a ser apagado: ";
-    cin >> filename;
-
-    filename = toUpper(filename); // Usando sua função helper
-
+    string filename = toUpper(selectFile(diskFile->getFilesInfo()));
     try {
         diskFile->deleteFile(filename);
         cout << "Arquivo '" << filename << "' apagado com sucesso." << endl;
@@ -160,7 +185,6 @@ int main() {
         }
 
         int option;
-        cin.ignore();
         cout << " -- Selecione uma das opcoes abaixo -- " << endl;
         cout << "1 -> Listar conteudo do disco" << endl;
         cout << "2 -> Listar o conteudo de um arquivo" << endl;

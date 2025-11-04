@@ -14,7 +14,7 @@ Implementação de Operações Fundamentais: O programa deve ser capaz de realiz
 operações básicas sobre o sistema de arquivos FAT16:
 - [x] **Listar o conteúdo do disco (10%):** exibir em uma lista os nomes dos arquivos (e seus respectivos tamanhos)
   existentes no diretório raiz.
-- [ ] **Listar o conteúdo de um arquivo (10%):** mostrar (pode ser na tela) o conteúdo de um arquivo do diretório
+- [x] **Listar o conteúdo de um arquivo (10%):** mostrar (pode ser na tela) o conteúdo de um arquivo do diretório
   raiz.
 - [x] **Exibir os atributos de um arquivo (10%):** mostrar data/hora da criação/última modificação e os seguintes
   atributos: se é somente leitura; se é oculto; se é arquivo de sistema

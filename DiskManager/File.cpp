@@ -5,6 +5,7 @@
 #include "File.h"
 #include <iostream>
 #include <stdexcept>
+#include <iomanip>
 
 File::File(const string& diskImagePath) : m_fatSystem(diskImagePath) {
     m_fatSystem.mount();
@@ -89,4 +90,26 @@ void File::deleteFile(const string& filename) {
     // Repassa a chamada para a lógica do FAT16
     m_fatSystem.deleteFile(filename);
     loadFiles();
+}
+
+std::string File::formatFatDate(uint16_t date) {
+    if (date == 0) return "N/A";
+    int day   = date & 0x1F;
+    int month = (date >> 5) & 0x0F;
+    int year  = ((date >> 9) & 0x7F) + 1980;
+    std::ostringstream oss;
+    oss << std::setfill('0') << std::setw(2) << day << "/"
+        << std::setw(2) << month << "/" << year;
+    return oss.str();
+}
+
+std::string File::formatFatTime(uint16_t time) {
+    if (time == 0) return "N/A";
+    int hour = (time >> 11) & 0x1F;
+    int minute = (time >> 5) & 0x3F;
+    int second = (time & 0x1F) * 2;
+    std::ostringstream oss;
+    oss << std::setfill('0') << std::setw(2) << hour << ":"
+        << std::setw(2) << minute << ":" << std::setw(2) << second;
+    return oss.str();
 }
