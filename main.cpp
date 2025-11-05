@@ -138,6 +138,7 @@ void deleteFile(optional<File>& diskFile) {
     try {
         diskFile->deleteFile(filename);
         cout << "Arquivo '" << filename << "' apagado com sucesso." << endl;
+        diskFile->loadFiles();
     } catch (const exception& e) {
         cerr << "Erro ao apagar arquivo: " << e.what() << endl;
     }
@@ -152,6 +153,21 @@ void addFile(optional<File>& diskFile) {
 
     fatName = toUpper(fatName);
 
+    string diskPath = filesystem::absolute(diskFile->getPath()).string();
+    string absHostPath = filesystem::absolute(hostPath).string();
+
+    if (diskPath == absHostPath) {
+        cout<<endl;
+        cerr << "Erro: não é permitido inserir a própria imagem de disco dentro dela mesma." << endl;
+        return;
+    }
+
+    if (!filesystem::exists(hostPath)) {
+        cout<<endl;
+        cerr << "Erro: O arquivo '" << hostPath << "' não existe." << endl;
+        return;
+    }
+
     try {
         diskFile->writeFile(hostPath, fatName);
         cout << "Arquivo '" << hostPath << "' escrito com sucesso como '"
@@ -164,7 +180,7 @@ void addFile(optional<File>& diskFile) {
 int main() {
     std::setlocale(LC_ALL, "en_US.UTF-8"); // ou "pt_BR.UTF-8"
     std::ios_base::sync_with_stdio(false);
-    std::cout.tie(nullptr);
+    std::cin.tie(&std::cout);
     string filename;
     bool isValidFile = false, run = true;
     optional<File> diskFile;
@@ -174,21 +190,24 @@ int main() {
         if (!isValidFile)
             while (true) {
                 cout << "Insira um arquivo .img: ";
-                cin >> filename;
+                getline(cin, filename);
+
                 if (filesystem::exists(filename) && filesystem::is_regular_file(filename)) {
                     cout << "Abrindo imagem de disco: " << filename << endl;
                     diskFile.emplace(filename);
                     isValidFile = true;
                     break;
                 }
+                else {
+                cout << "Arquivo '" << filename << "' nao encontrado. Tente novamente." << endl;
             }
+        }
 
         if (!diskFile) {
             cerr << "Erro interno: arquivo não carregado corretamente." << endl;
             break;
         }
 
-        int option;
         cout << " -- Selecione uma das opcoes abaixo -- " << endl;
         cout << "1 -> Listar conteudo do disco" << endl;
         cout << "2 -> Listar o conteudo de um arquivo" << endl;
@@ -199,37 +218,43 @@ int main() {
         cout << "7 -> Trocar imagem de disco" << endl;
         cout << "8 -> Sair" << endl;
         cout << "Opcao: ";
+
+        int option;
         cin >> option;
 
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Entrada invalida.\n";
+            cout << "Pressione Enter para continuar...";
+            cin.get();
+            continue;
+        }
+
         switch (option) {
-            case 1:
-                listRootDirectory(diskFile);
-                break;
-            case 2:
-                showFileContent(diskFile);
-                break;
-            case 3:
-                showFileAttributes(diskFile);
-                break;
-            case 4:
-                renameFile(diskFile);
-                break;
-            case 5:
-                addFile(diskFile);
-                break;
-            case 6:
-                deleteFile(diskFile);
-                break;
+            case 1: listRootDirectory(diskFile); break;
+            case 2: showFileContent(diskFile); break;
+            case 3: showFileAttributes(diskFile); break;
+            case 4: renameFile(diskFile); break;
+            case 5: addFile(diskFile); break;
+            case 6: deleteFile(diskFile); break;
             case 7:
                 isValidFile = false;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout<<endl;
                 break;
             case 8:
+                cout << "Encerrando o programa.\n";
                 run = false;
+                break;
+            default:
+                cout << "Opcao invalida. Escolha entre 1 e 8.\n";
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout<<endl;
                 break;
         }
 
     }
-
 
     return 0;
 }

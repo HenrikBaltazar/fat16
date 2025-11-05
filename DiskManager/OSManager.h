@@ -17,6 +17,9 @@ public:
     bool readSectors(uint32_t sectorIndex, uint32_t count, uint8_t* buffer);
     bool writeSectors(uint32_t sectorIndex, uint32_t count, const uint8_t* buffer);
     bool isDiskOpen() const;
+    const std::string& getPath() const {
+        return m_path;
+    }
 private:
     string m_path;
     fstream m_file;

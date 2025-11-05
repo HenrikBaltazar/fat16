@@ -67,6 +67,10 @@ class FAT16 {
 public:
     explicit FAT16(const string& diskImagePath);
 
+    const std::string& getPath() const {
+        return m_osManager.getPath();
+    }
+
     bool mount();
     vector<FileInfo> listRootDirectory();
 

@@ -14,6 +14,9 @@ using namespace std;
 class File {
 public:
     explicit File(const string& diskImagePath);
+    const std::string& getPath() const {
+        return m_fatSystem.getPath();
+    }
 
     bool getIsMounted();
     vector<FileInfo> listRootDirectory();
