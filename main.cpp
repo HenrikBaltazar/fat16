@@ -156,9 +156,10 @@ void addFile(optional<File>& diskFile) {
     string diskPath = filesystem::absolute(diskFile->getPath()).string();
     string absHostPath = filesystem::absolute(hostPath).string();
 
-    if (diskPath == absHostPath) {
-        cout << "Erro: não é permitido inserir a própria imagem de disco dentro dela mesma." << endl;
-        cout<<endl;
+
+    if (filesystem::path(hostPath).extension() == ".img") {
+        cout << "Erro: não é permitido inserir uma imagem de disco (.img) dentro de outra." << endl;
+        cout << endl;
         return;
     }
 
